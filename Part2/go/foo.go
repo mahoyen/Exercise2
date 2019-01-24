@@ -9,8 +9,8 @@ import (
 
 // Control signals
 const (
-	GetNumber = iota
-	Exit
+	GetNumber = 5
+	Exit = 6
 )
 
 func number_server(add_number <-chan int, control <-chan int, number chan<- int) {
@@ -21,6 +21,19 @@ func number_server(add_number <-chan int, control <-chan int, number chan<- int)
 		select {
 			// TODO: receive different messages and handle them correctly
 			// You will at least need to update the number and handle control signals.
+		case <-add_number:
+			i += <-add_number
+			print("i is now ", i,"\n")
+		case <-control:
+			if control == GetNumber {
+				number<-i
+			}
+			else if control == Exit {
+				
+			}
+}
+				
+			
 		}
 	}
 }
@@ -30,6 +43,7 @@ func incrementing(add_number chan<-int, finished chan<- bool) {
 		add_number <- 1
 	}
 	//TODO: signal that the goroutine is finished
+	finished<-true
 }
 
 func decrementing(add_number chan<- int, finished chan<- bool) {
@@ -37,6 +51,7 @@ func decrementing(add_number chan<- int, finished chan<- bool) {
 		add_number <- -1
 	}
 	//TODO: signal that the goroutine is finished
+	finished<-true
 }
 
 func main() {
@@ -44,10 +59,18 @@ func main() {
 
 	// TODO: Construct the required channels
 	// Think about wether the receptions of the number should be unbuffered, or buffered with a fixed queue size.
+	add_number := make(chan int, 2)
+	control := make(chan int)
+	number := make(chan int)
+	finished := make(chan bool,2)
+
 
 	// TODO: Spawn the required goroutines
+	go incrementing(add_number, finished)
+	go decrementing(add_number, finished)
 
 	// TODO: block on finished from both "worker" goroutines
+	
 
 	control<-GetNumber
 	Println("The magic number is:", <- number)

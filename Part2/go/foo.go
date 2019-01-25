@@ -7,13 +7,7 @@ import (
     "runtime"
 )
 
-// Control signals
-const (
-	GetNumber = 5
-	Exit = 6
-)
-
-func number_server(add_number <-chan int, control <-chan int, number chan<- int) {
+func number_server(add_number <-chan int, number chan<- int) {
 	var i = 0
 
 	// This for-select pattern is one you will become familiar with if you're using go "correctly".
@@ -25,7 +19,7 @@ func number_server(add_number <-chan int, control <-chan int, number chan<- int)
 			i+=x
 			print("i is now ", i,"\n")
 		case number<-i:
-			//
+			
 		}
 				
 			
@@ -55,7 +49,6 @@ func main() {
 	// TODO: Construct the required channels
 	// Think about wether the receptions of the number should be unbuffered, or buffered with a fixed queue size.
 	add_number := make(chan int,2)
-	control := make(chan int)
 	number := make(chan int)
 	finished := make(chan bool)
 
@@ -63,7 +56,7 @@ func main() {
 	// TODO: Spawn the required goroutines
 	go incrementing(add_number, finished)
 	go decrementing(add_number, finished)
-	go number_server(add_number, control, number)
+	go number_server(add_number, number)
 
 	// TODO: block on finished from both "worker" goroutines
 	<-finished
